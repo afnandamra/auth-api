@@ -9,7 +9,7 @@ const { server } = require('../../../src/server.js');
 const request = supergoose(server);
 
 let id;
-let SECRET = process.env.SECRET || 'toes';
+let SECRET = process.env.SECRET || 'supersecret';
 let users = {
   admin: { username: 'admin', password: 'password', role: 'admin' },
   editor: { username: 'editor', password: 'password', role: 'editor' },
