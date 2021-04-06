@@ -19,7 +19,7 @@ describe('Auth Router', () => {
     describe(`${userType} users`, () => {
       it('can create one', async () => {
         const response = await mockRequest
-          .post('/signup')
+          .post('/api/v2/signup')
           .send(users[userType]);
         const userObject = response.body;
 
@@ -31,7 +31,7 @@ describe('Auth Router', () => {
 
       it('can signin with basic', async () => {
         const response = await mockRequest
-          .post('/signin')
+          .post('/api/v2/signin')
           .auth(users[userType].username, users[userType].password);
 
         const userObject = response.body;
@@ -44,7 +44,7 @@ describe('Auth Router', () => {
 
     describe('bad logins', () => {
       it('basic fails with known user and wrong password ', async () => {
-        const response = await mockRequest.post('/signin').auth('admin', 'xyz');
+        const response = await mockRequest.post('/api/v2/signin').auth('admin', 'xyz');
         const userObject = response.body;
 
         expect(response.status).toBe(403);
@@ -54,7 +54,7 @@ describe('Auth Router', () => {
 
       it('basic fails with unknown user', async () => {
         const response = await mockRequest
-          .post('/signin')
+          .post('/api/v2/signin')
           .auth('nobody', 'xyz');
         const userObject = response.body;
 
@@ -66,7 +66,7 @@ describe('Auth Router', () => {
       it('bearer fails with an invalid token', async () => {
         // First, use basic to login to get a token
         const bearerResponse = await mockRequest
-          .get('/users')
+          .get('/api/v2/users')
           .set('Authorization', `Bearer foobar`);
 
         // Not checking the value of the response, only that we "got in"

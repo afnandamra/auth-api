@@ -3,19 +3,64 @@
 require('dotenv').config();
 const supergoose = require('@code-fellows/supergoose');
 const jwt = require('jsonwebtoken');
-const { server } = require('../../../src/server.js');
+
 const Users = require('../../../src/auth/models/users.js');
+const { server } = require('../../../src/server.js');
 const request = supergoose(server);
+
 let id;
+let SECRET = process.env.SECRET || 'toes';
 let users = {
-  admin: { username: 'admin', password: 'password' },
+  admin: { username: 'admin', password: 'password', role: 'admin' },
+  editor: { username: 'editor', password: 'password', role: 'editor' },
+  user: { username: 'user', password: 'password', role: 'user' },
 };
+
 beforeAll(async (done) => {
   await new Users(users.admin).save();
+  await new Users(users.user).save();
   done();
 });
+
 const user = { username: 'admin' };
-const token = jwt.sign(user, process.env.SECRET);
+const token = jwt.sign(user, SECRET);
+
+const basic = { username: 'basic' };
+const basicToken = jwt.sign(basic, SECRET);
+
+describe('test /users and /secret routes', () => {
+  it('should allow access to all users to access /secret route', async () => {
+    const response = await request
+      .get('/api/v2/secret')
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(200);
+    expect(response.text).toEqual('Welcome to the secret area');
+  });
+  it('should not allow users with wrong token to access /secret route', async () => {
+    const response = await request
+      .get('/api/v2/secret')
+      .set('Authorization', `Bearer thisiswrongtoken`);
+    expect(response.status).toEqual(500);
+  });
+  it('should not allow non users to access /secret route', async () => {
+    const response = await request.get('/api/v2/secret');
+    expect(response.status).toEqual(500);
+  });
+  it('should allow admin users to access /users route', async () => {
+    const response = await request
+      .get('/api/v2/users')
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(200);
+    expect(Array.isArray(response.body)).toBeTruthy();
+  });
+  it('should not allow all users to access /users route', async () => {
+    const response = await request
+      .get('/api/v2/users')
+      .set('Authorization', `Bearer ${basicToken}`);
+    expect(response.status).toEqual(500);
+  });
+});
+
 describe('Model CRUD Test', () => {
   it('read all from DataBase test on GET /clothes when there is no data', async () => {
     const response = await request
@@ -48,7 +93,6 @@ describe('Model CRUD Test', () => {
     const response = await request
       .get(`/api/v2/clothes/1`)
       .set('Authorization', `Bearer ${token}`);
-    console.log(response.status);
     expect(response.status).toEqual(500);
   });
   it('read all from DataBase test on GET /clothes', async () => {
@@ -92,6 +136,28 @@ describe('Model CRUD Test', () => {
     const response = await request
       .get('/api/v2/movies')
       .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(500);
+  });
+  it('should deny access for the user with the wrong token', async () => {
+    const response = await request
+      .post(`/api/v2/clothes`)
+      .send({
+        name: 'Shirt',
+        color: 'Blue',
+        size: 'XL',
+      })
+      .set('Authorization', `Bearer ${basicToken}`);
+    expect(response.status).toEqual(500);
+  });
+  it('should deny access for the user without a token', async () => {
+    const response = await request
+      .post(`/api/v2/clothes`)
+      .send({
+        name: 'Shirt',
+        color: 'Blue',
+        size: 'XL',
+      })
+      .set('Authorization', `Bearer thisiswrongtoken`);
     expect(response.status).toEqual(500);
   });
 });

@@ -29,7 +29,6 @@ describe('Model CRUD Test', () => {
   });
   it('should throw an error if the ID does not exist on GET /clothes', async () => {
     const response = await request.get(`/api/v1/clothes/1`);
-    console.log(response.status);
     expect(response.status).toEqual(500);
   });
   it('read all from DataBase test on GET /clothes', async () => {

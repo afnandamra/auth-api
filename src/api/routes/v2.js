@@ -43,10 +43,14 @@ async function handleGetAll(req, res) {
 
 async function handleGetOne(req, res) {
   const id = req.params.id;
-  let theRecord = await req.model.get(id);
-  res.status(200).json(theRecord);
+  try {
+    let theRecord = await req.model.get(id);
+    res.status(200).json(theRecord);
+  } catch (error) {
+    error.message = 'ID doesn\'t exist';
+    res.status(500).json(error.message);
+  }
 }
-
 async function handleCreate(req, res) {
   let obj = req.body;
   let newRecord = await req.model.create(obj);
@@ -55,15 +59,25 @@ async function handleCreate(req, res) {
 
 async function handleUpdate(req, res) {
   const id = req.params.id;
-  const obj = req.body;
-  let updatedRecord = await req.model.update(id, obj);
-  res.status(200).json(updatedRecord);
+  try {
+    const obj = req.body;
+    let updatedRecord = await req.model.update(id, obj);
+    res.status(200).json(updatedRecord);
+  } catch (error) {
+    error.message = 'ID doesn\'t exist';
+    res.status(500).json(error.message);
+  }
 }
 
 async function handleDelete(req, res) {
   let id = req.params.id;
-  let deletedRecord = await req.model.delete(id);
-  res.status(200).json(deletedRecord);
+  try {
+    let deletedRecord = await req.model.delete(id);
+    res.status(200).json(deletedRecord);
+  } catch (error) {
+    error.message = 'ID doesn\'t exist';
+    res.status(500).json(error.message);
+  }
 }
 
 module.exports = router;
