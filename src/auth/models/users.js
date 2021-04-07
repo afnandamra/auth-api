@@ -4,16 +4,19 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const users = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: {
-    type: String,
-    required: true,
-    default: 'user',
-    enum: ['user', 'writer', 'editor', 'admin'],
+const users = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      required: true,
+      default: 'user',
+      enum: ['user', 'writer', 'editor', 'admin'],
+    },
   },
-});
+  { toJSON: { virtuals: true } },
+);
 // }, { toObject: { getters: true } }); // What would this do if we use this instead of just });
 
 // Adds a virtual field to the schema. We can see it, but it never persists
