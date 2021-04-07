@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const SECRET = process.env.SECRET || 'supersecret';
+
 const users = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
@@ -25,7 +27,7 @@ users.virtual('token').get(function () {
   let tokenObject = {
     username: this.username,
   };
-  return jwt.sign(tokenObject, process.env.SECRET);
+  return jwt.sign(tokenObject, SECRET);
 });
 
 users.virtual('capabilities').get(function () {
@@ -57,7 +59,7 @@ users.statics.authenticateBasic = async function (username, password) {
 // BEARER AUTH
 users.statics.authenticateWithToken = async function (token) {
   try {
-    const parsedToken = jwt.verify(token, process.env.SECRET);
+    const parsedToken = jwt.verify(token, SECRET);
     const user = this.findOne({ username: parsedToken.username });
     if (user) {
       return user;
